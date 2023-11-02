@@ -11,7 +11,7 @@ import string
 ################## Descargar audio ############################
 
 # Crear un objeto YouTube
-url = "https://www.youtube.com/watch?v=OG0AEe3KEjk&ab_channel=TheWildProject"
+url = "https://www.youtube.com/watch?v=REbSqXPW2wU&ab_channel=TheWildProject"
 yt = YouTube(url)
 video_title = yt.title
 video_length = yt.length
@@ -22,7 +22,7 @@ video_author = yt.author
 audio_stream = yt.streams.filter(only_audio=True).first()
 
 # Guardamos el audio
-output_path = '../audios'
+output_path = './audios'
 
 audio_stream.download(output_path=output_path, filename='audio')
 
@@ -37,24 +37,24 @@ password = "postgres"
 port = "5433"
 
 # Crear la conexión
-connection_string = f"postgresql://{user}:{password}@{host}:{port}/{dbname}"
-engine = create_engine(connection_string)
+# connection_string = f"postgresql://{user}:{password}@{host}:{port}/{dbname}"
+# engine = create_engine(connection_string)
 
 
-with engine.connect() as connection:
+# with engine.connect() as connection:
     # Introducir nombre y url
-    connection.execute(text(f"insert into public.videos (url, name, length, views, author)values ('{url}', '{video_title}', '{video_length}', '{video_views}', '{video_author}');"))
-    connection.commit()  # Confirmar la transacción
-    connection.close()
+    # connection.execute(text(f"insert into public.videos (url, name, length, views, author)values ('{url}', '{video_title}', '{video_length}', '{video_views}', '{video_author}');"))
+    # connection.commit()  # Confirmar la transacción
+    # connection.close()
 
 #######################    03    ##############################
 ################## Convertir audio ############################
 
 # Ruta del archivo original
-input_audio_path = '../audios/audio'
+input_audio_path = './audios/audio'
 
 # Ruta donde se guardará el archivo mp3
-output_audio_path = '../audios/audio.mp3'
+output_audio_path = './audios/audio.mp3'
 
 # Cargar el archivo de audio
 audio_clip = AudioFileClip(input_audio_path)
@@ -64,17 +64,18 @@ audio_clip.write_audiofile(output_audio_path, codec='mp3')
 
 #######################    04    ##############################
 ####################### Whisper ###############################
+print(os.path.exists('./audios/audio.mp3'))
 
 print("################### Comienza whisper #######################")
 model = whisper.load_model("base")
-result = model.transcribe("../audios/audio.mp3")
+result = model.transcribe('./audios/audio.mp3')
 
 print("################### Termina whisper #######################")
 
 #######################    05    ################################
 ################## Borrar audio original ########################
 
-file_path = '../audios/audio'
+file_path = './audios/audio'
 
 # Eliminar el archivo
 if os.path.exists(file_path):
