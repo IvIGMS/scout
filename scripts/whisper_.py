@@ -2,32 +2,9 @@ from pytube import YouTube
 from moviepy.editor import *
 from sqlalchemy import create_engine, text
 import whisper
-import time
 import os
 import pandas as pd
 import string
-
-#######################    01    ##############################
-################## Descargar audio ############################
-
-# Crear un objeto YouTube
-url = "https://www.youtube.com/watch?v=Tcby67uLQKM&ab_channel=SebastianYatraVEVO"
-yt = YouTube(url)
-video_title = yt.title
-video_length = yt.length
-video_views = yt.views
-video_author = yt.author
-
-# Obtener solo la transmisión de audio de más alta calidad
-audio_stream = yt.streams.filter(only_audio=True).first()
-
-# Guardamos el audio
-output_path = './audios'
-
-audio_stream.download(output_path=output_path, filename='audio')
-
-#######################    02    ##############################
-############## Guardar en BBDD Metadatos ######################
 
 # Parámetros de conexión
 host = "localhost"
@@ -36,90 +13,104 @@ user = "postgres"
 password = "postgres"
 port = "5433"
 
-# Crear la conexión
-connection_string = f"postgresql://{user}:{password}@{host}:{port}/{dbname}"
-engine = create_engine(connection_string)
+def download_audio(url, username):
+    # Crear un objeto YouTube
+    yt = YouTube(url)
+    video_title = yt.title
+    video_length = yt.length
+    video_views = yt.views
+    video_author = yt.author
 
+    # Obtener solo audio
+    audio_stream = yt.streams.filter(only_audio=True).first()
 
-with engine.connect() as connection:
-    # Introducir nombre y url
-    connection.execute(text(f"insert into public.videos (url, name, length, views, author)values ('{url}', '{video_title}', '{video_length}', '{video_views}', '{video_author}');"))
-    connection.commit()  # Confirmar la transacción
-    connection.close()
+    # Guardamos el audio
+    output_path = './audios'
 
-#######################    03    ##############################
-################## Convertir audio ############################
+    audio_stream.download(output_path=output_path, filename='audio')
 
-# Ruta del archivo original
-input_audio_path = './audios/audio'
+    # Guardamos info del video
 
-# Ruta donde se guardará el archivo mp3
-output_audio_path = './audios/audio.mp3'
+    # Crear la conexión
+    connection_string = f"postgresql://{user}:{password}@{host}:{port}/{dbname}"
+    engine = create_engine(connection_string)
 
-# Cargar el archivo de audio
-audio_clip = AudioFileClip(input_audio_path)
+    with engine.connect() as connection:
+        # Introducir nombre y url
+        connection.execute(text(f"insert into public.videos (url, name, length, views, author, username) values ('{url}', '{video_title}', '{video_length}', '{video_views}', '{video_author}', '{username}');"))
+        connection.commit()  # Confirmar la transacción
+        connection.close()
 
-# Guardar el archivo de audio en formato mp3
-audio_clip.write_audiofile(output_audio_path, codec='mp3')
+def convert_audio_transform():
+        # Ruta del archivo original
+    input_audio_path = './audios/audio'
 
-#######################    04    ##############################
-####################### Whisper ###############################
+    # Ruta donde se guardará el archivo mp3
+    output_audio_path = './audios/audio.mp3'
 
-print("################### Comienza whisper #######################")
-model = whisper.load_model("base")
-result = model.transcribe('./audios/audio.mp3')
+    # Cargar el archivo de audio
+    audio_clip = AudioFileClip(input_audio_path)
 
-print("################### Termina whisper #######################")
+    # Guardar el archivo de audio en formato mp3
+    audio_clip.write_audiofile(output_audio_path, codec='mp3')
 
-#######################    05    ################################
-################## Borrar audio original ########################
+    #######################    04    ##############################
+    ####################### Whisper ###############################
 
-file_path = './audios/audio'
+    print("################### Comienza whisper #######################")
+    model = whisper.load_model("base")
+    result = model.transcribe('./audios/audio.mp3')
 
-# Eliminar el archivo
-if os.path.exists(file_path):
-    os.remove(file_path)
-else:
-    print(f"El archivo {file_path} no existe.")
+    print("################### Termina whisper #######################")
 
-    text = result["text"]  # Tu código existente
+    return result["text"]
 
-#######################    06    ##############################
-##################### Conversiones ############################
+def drop_original_audio():
 
-text = result["text"]  # Tu código existente
+    file_path = './audios/audio'
 
-# Crear una tabla de traducción para eliminar la puntuación
-translator = str.maketrans('', '', string.punctuation)
+    # Eliminar el archivo
+    if os.path.exists(file_path):
+        os.remove(file_path)
+    else:
+        print(f"El archivo {file_path} no existe.")
 
-# Usar translate() para eliminar la puntuación del texto
-text_no_punctuation = text.translate(translator)
+    #######################    06    ##############################
+    ##################### Conversiones ############################
 
-# Pasar todo a minusculas
-text_lower = text_no_punctuation.lower()
+def transform_df(text):
 
-# Convertir el texto en un array de Strings
-text_array = text_lower.split()
+    # Crear una tabla de traducción para eliminar la puntuación
+    translator = str.maketrans('', '', string.punctuation)
 
-# Crear un DataFrame a partir del array de strings
-df = pd.DataFrame(text_array, columns=['Word'])
+    # Usar translate() para eliminar la puntuación del texto
+    text_no_punctuation = text.translate(translator)
 
-# Contar la frecuencia de cada palabra
-word_counts = df['Word'].value_counts().reset_index()
+    # Pasar todo a minusculas
+    text_lower = text_no_punctuation.lower()
 
-# Renombrar las columnas para reflejar el contenido
-word_counts.columns = ['Word', 'Frequency']
+    # Convertir el texto en un array de Strings
+    text_array = text_lower.split()
 
-# Ordenar el DataFrame por la frecuencia de las palabras de mayor a menor
-sorted_word_counts = word_counts.sort_values(by='Frequency', ascending=False)
+    # Crear un DataFrame a partir del array de strings
+    df = pd.DataFrame(text_array, columns=['Word'])
 
-# Filtramos solo las palabras que tengan mas de 3 caracteres
-filtered_words = sorted_word_counts.loc[sorted_word_counts['Word'].str.len() > 3]
-print(filtered_words.head(10))
+    # Contar la frecuencia de cada palabra
+    word_counts = df['Word'].value_counts().reset_index()
 
-#######################    07    ##############################
-###################### Write .csv #############################
+    # Renombrar las columnas para reflejar el contenido
+    word_counts.columns = ['Word', 'Frequency']
 
-# Guardar en csv
-# Guardar el DataFrame en un archivo CSV en Google Drive
-filtered_words.to_csv('./csv/words.csv', index=False)
+    # Ordenar el DataFrame por la frecuencia de las palabras de mayor a menor
+    sorted_word_counts = word_counts.sort_values(by='Frequency', ascending=False)
+
+    # Filtramos solo las palabras que tengan mas de 3 caracteres
+    filtered_words = sorted_word_counts.loc[sorted_word_counts['Word'].str.len() > 3]
+    print(filtered_words.head(10))
+
+    #######################    07    ##############################
+    ###################### Write .csv #############################
+
+    # Guardar en csv
+    # Guardar el DataFrame en un archivo CSV en Google Drive
+    filtered_words.to_csv('./csv/words.csv', index=False)
