@@ -11,7 +11,7 @@ import string
 ################## Descargar audio ############################
 
 # Crear un objeto YouTube
-url = "https://www.youtube.com/watch?v=REbSqXPW2wU&ab_channel=TheWildProject"
+url = "https://www.youtube.com/watch?v=wA6qHwjBGN0&ab_channel=BaityLive"
 yt = YouTube(url)
 video_title = yt.title
 video_length = yt.length
@@ -37,15 +37,15 @@ password = "postgres"
 port = "5433"
 
 # Crear la conexión
-# connection_string = f"postgresql://{user}:{password}@{host}:{port}/{dbname}"
-# engine = create_engine(connection_string)
+connection_string = f"postgresql://{user}:{password}@{host}:{port}/{dbname}"
+engine = create_engine(connection_string)
 
 
-# with engine.connect() as connection:
+with engine.connect() as connection:
     # Introducir nombre y url
-    # connection.execute(text(f"insert into public.videos (url, name, length, views, author)values ('{url}', '{video_title}', '{video_length}', '{video_views}', '{video_author}');"))
-    # connection.commit()  # Confirmar la transacción
-    # connection.close()
+    connection.execute(text(f"insert into public.videos (url, name, length, views, author)values ('{url}', '{video_title}', '{video_length}', '{video_views}', '{video_author}');"))
+    connection.commit()  # Confirmar la transacción
+    connection.close()
 
 #######################    03    ##############################
 ################## Convertir audio ############################
@@ -64,7 +64,6 @@ audio_clip.write_audiofile(output_audio_path, codec='mp3')
 
 #######################    04    ##############################
 ####################### Whisper ###############################
-print(os.path.exists('./audios/audio.mp3'))
 
 print("################### Comienza whisper #######################")
 model = whisper.load_model("base")
@@ -123,4 +122,4 @@ print(filtered_words.head(10))
 
 # Guardar en csv
 # Guardar el DataFrame en un archivo CSV en Google Drive
-filtered_words.to_csv('../csv/words.csv', index=False)
+filtered_words.to_csv('./csv/words.csv', index=False)

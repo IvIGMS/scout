@@ -10,7 +10,7 @@ import pandas as pd
 
 # Leer un archivo CSV
 
-df = pd.read_csv('../csv/words.csv')
+df = pd.read_csv('./csv/words.csv')
 
 #######################    01    ##############################
 ################### Escribir en bbdd ##########################
