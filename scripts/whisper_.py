@@ -11,7 +11,7 @@ import string
 ################## Descargar audio ############################
 
 # Crear un objeto YouTube
-url = "https://www.youtube.com/watch?v=wA6qHwjBGN0&ab_channel=BaityLive"
+url = "https://www.youtube.com/watch?v=Tcby67uLQKM&ab_channel=SebastianYatraVEVO"
 yt = YouTube(url)
 video_title = yt.title
 video_length = yt.length
