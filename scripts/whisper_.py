@@ -13,6 +13,24 @@ user = "postgres"
 password = "postgres"
 port = "5433"
 
+def is_video_duplicated(url, username):
+    yt = YouTube(url)
+    video_title = yt.title
+
+    connection_string = f"postgresql://{user}:{password}@{host}:{port}/{dbname}"
+    engine = create_engine(connection_string)
+
+    with engine.connect() as connection:
+        # Ejecutar una consulta SELECT
+        result = connection.execute(text(f"SELECT * FROM public.videos WHERE username = '{username}' AND name = '{video_title}';"))
+        fetched_results = result.fetchall()
+
+        if fetched_results:  # Si hay resultados
+            return True
+
+        else:  # Si no hay resultados
+            return False
+
 def download_audio(url, username):
     # Crear un objeto YouTube
     yt = YouTube(url)

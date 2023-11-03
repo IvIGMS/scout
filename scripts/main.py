@@ -8,15 +8,11 @@ print("(Si introduces un user nuevo se registra automaticamente, si introduces u
 username_ = input("Introduce tu nombre usuario: ")
 username = username_.lower()
 print("#############################################################")
-print("(Puedes introducir la URL de un video o la URL de una PLAYLIST)")
+print("(Puedes introducir la URL de un video)")
 url = input("Introduce una URL de youtube: ")
 print("#############################################################")
 
-
-# PROGRAMAR FUNCIONALIDAD DE PLAYLISTS
 # PROGRAMAR QUE UN MISMO USER NO META EL MISMO VIDEO. UN AVISO DICIENDO QUE ESE VIDEO NO SE PUEDE INTRODUCIR
-
-
 
 # Parámetros de conexión
 host = "localhost"
@@ -47,7 +43,7 @@ def register():
             # Ejecutar una consulta SELECT
             connection.execute(text(f"INSERT INTO public.username (username) VALUES ('{username}');"))
             connection.commit()  # Confirmar la transacción
-            print("Usuario no encontrado. Creamos uno nuevo!")
+            
 
 # Si no está en la base de datos, lo registramos
 result_is_on_database = is_on_database()
@@ -55,18 +51,23 @@ result_is_on_database = is_on_database()
 if result_is_on_database == True:
     print(f"Has hecho login con el user {username}")
 if result_is_on_database == False:
-    print(f"Registramos un usuario nuevo.")
+    print(f"Usuario no encontrado. Creamos uno nuevo: {username}!")
     register()
 
 ## Calculo tiempo inicial
 start_time = time.time()
 
 # Logica del proceso
-whisper_.download_audio(url, username)
-text = whisper_.convert_audio_transform()
-whisper_.transform_df(text)
-whisper_.drop_original_audio()
-data.data(username)
+if whisper_.is_video_duplicated(url, username):
+     print("#################################################################")
+     print(f"Para el user {username} el video ya está en la BBDD. Pruebe con otro")
+     print("#################################################################")
+else:  
+    whisper_.download_audio(url, username)
+    text = whisper_.convert_audio_transform()
+    whisper_.transform_df(text)
+    whisper_.drop_original_audio()
+    data.data(username)
 
 ## Calculo tiempo final
 
