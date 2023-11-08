@@ -2,14 +2,19 @@ import whisper_
 import data
 from sqlalchemy import create_engine, text
 import time
+import sys
+
+if len(sys.argv) != 3:
+    print(f"Se esperaban 2 argumentos, pero se recibieron {len(sys.argv) - 1}.")
+    sys.exit(1)
 
 print("#############################################################")
 print("(Si introduces un user nuevo se registra automaticamente, si introduces uno ya usado se le sumara la información)")
-username_ = input("Introduce tu nombre usuario: ")
+username_ = sys.argv[1]
 username = username_.lower()
 print("#############################################################")
 print("(Puedes introducir la URL de un video)")
-url = input("Introduce una URL de youtube: ")
+url = sys.argv[2]
 print("#############################################################")
 
 # PROGRAMAR QUE UN MISMO USER NO META EL MISMO VIDEO. UN AVISO DICIENDO QUE ESE VIDEO NO SE PUEDE INTRODUCIR
