@@ -1,6 +1,9 @@
 # scout
 Python ETL / Whisper / postgres
 
+python 3.12
+java 17
+
 En este ETL pasamos de voz a texto el audio de un video de youtube y guardamos las palabras (filtradas bajo mi criterio) en una base de datos para contar cuantas
 veces se repiten en el video. La finalidad es poder tener una base de palabras extensa sumando las palabras contadas de varios videos de youtube. Para ello usamos
 la API de whisper de OpenAI.
@@ -12,7 +15,7 @@ de nuestros datos, finalmente nos dirá las palabras introducidas en el log junt
 Herramientas necesarias:
 
 --Docker (correr la bbdd de postgre, dentro del archivo de credentials_database.txt está lo necesario para crear la bbdd en docker y luego crear las tablas y la consulta SQL)
---Anaconda (para tener todo el entorno de python)
+--env
 --Visual Studio Code (buena integración con entornos virtuales de anaconda)
 --git (clonar el repositorio)
 --Dbeaber (gestor de base de datos)
