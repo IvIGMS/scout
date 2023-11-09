@@ -43,7 +43,7 @@ def download_audio(url, username):
     audio_stream = yt.streams.filter(only_audio=True).first()
 
     # Guardamos el audio
-    output_path = './audios'
+    output_path = '../audios'
 
     audio_stream.download(output_path=output_path, filename='audio')
 
@@ -61,10 +61,10 @@ def download_audio(url, username):
 
 def convert_audio_transform():
         # Ruta del archivo original
-    input_audio_path = './audios/audio'
+    input_audio_path = '../audios/audio'
 
     # Ruta donde se guardará el archivo mp3
-    output_audio_path = './audios/audio.mp3'
+    output_audio_path = '../audios/audio.mp3'
 
     # Cargar el archivo de audio
     audio_clip = AudioFileClip(input_audio_path)
@@ -76,8 +76,9 @@ def convert_audio_transform():
     ####################### Whisper ###############################
 
     print("################### Comienza whisper #######################")
-    model = whisper.load_model("base")
-    result = model.transcribe('./audios/audio.mp3')
+    # model = whisper.load_model("base", device="CPU")
+    model = whisper.load_model("small", device="cpu")
+    result = model.transcribe('../audios/audio.mp3')
 
     print("################### Termina whisper #######################")
 
@@ -85,7 +86,7 @@ def convert_audio_transform():
 
 def drop_original_audio():
 
-    file_path = './audios/audio'
+    file_path = '../audios/audio'
 
     # Eliminar el archivo
     if os.path.exists(file_path):
@@ -131,4 +132,4 @@ def transform_df(text):
 
     # Guardar en csv
     # Guardar el DataFrame en un archivo CSV en Google Drive
-    filtered_words.to_csv('./csv/words.csv', index=False)
+    filtered_words.to_csv('../csv/words.csv', index=False)
