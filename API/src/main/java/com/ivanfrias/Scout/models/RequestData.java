@@ -21,4 +21,3 @@ public class RequestData {
         this.url = url;
     }
 }
-
